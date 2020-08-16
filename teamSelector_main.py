@@ -27,9 +27,11 @@ class teamSelectorDialog(QtWidgets.QDialog):
         country_label = QtWidgets.QLabel("Country: ")
         league_label = QtWidgets.QLabel("League: ")
         self.league_list = QtWidgets.QListWidget()
+        self.league_list.setFixedSize(250, 100)
         self.league_list.itemClicked.connect(self.league_clicked_event)
         team_label = QtWidgets.QLabel("Team:")
         self.team_list = QtWidgets.QListWidget()
+        self.team_list.setFixedSize(250, 100)
         self.team_list.itemClicked.connect(self.team_clicked_event)
         self.home_pb = QtWidgets.QPushButton("Home")
         self.away_pb = QtWidgets.QPushButton("Away")
@@ -45,10 +47,13 @@ class teamSelectorDialog(QtWidgets.QDialog):
         main_layout.addItem(team_layout)
         team_layout.addWidget(team_label)
         team_layout.addWidget(self.team_list)
+        main_layout.addItem(button_layout)
+        button_layout.addWidget(self.home_pb)
+        button_layout.addWidget(self.away_pb)
 
 
         self.setLayout(main_layout)
-        self.resize(300, 800)
+        self.resize(400, 300)
 
     def lower_case(self, name="Test Name"):
         return name.replace(" ", "_").lower()
