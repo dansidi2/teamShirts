@@ -2,32 +2,49 @@ import sys
 from PySide2 import QtWidgets
 import json
 from PySide2.QtGui import QPixmap
+try:
+    import maya.cmds as mc
+except ModuleNotFoundError:
+    pass
+
 
 def lower_case(name):
     return name.replace(" ", "_").lower()
 
 
 def get_thumb_file(proper_name):
-    #print("Proper name: " + str(proper_name))
-    #print("Lower case: " + str(lower_case(proper_name)))
     suffix = (str(lower_case(proper_name)) + "_1001")
-    #print("Add suffix: " + str(suffix))
     extension = (suffix + (".png"))
-    #print("Extension: " + str(extension))
     thumb_file = ("V:\projects\StadiumCrowd\Assets\clothing\clubShirts\\thumbs\\" + str(extension))
-    #print("Full path: " + str(thumb_file))
     return thumb_file
 
 
-class teamSelectorDialog(QtWidgets.QDialog):
+def get_UDIM_file(proper_name):
+    suffix = (str(lower_case(proper_name)) + "_<UDIM>")
+    extension = (suffix + (".png"))
+    UDIM_file = ("V:\projects\StadiumCrowd\Assets\clothing\clubShirts\\thumbs\\" + str(extension))
+    return UDIM_file
+
+def get_texture_node(selected):
+    selectedNode = mc.ls(sl=True, dag=True, s=True)
+    print("Selected node: " + str(selectedNode))
+    shadeEng = mc.listConnections(selectedNode, type="shadingEngine")
+    print("ShadeEng: " + str(shadeEng))
+    materials = mc.ls(mc.listConnections(shadeEng), materials=True)
+    print("Materials: " + str(materials))
+    texture_node = mc.listConnections(materials)[0]
+    print("Texture node: " + str(texture_node))
+    return texture_node
+
+
+class TeamSelectorDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
-        super(teamSelectorDialog, self).__init__(parent)
+        super(TeamSelectorDialog, self).__init__(parent)
 
         # Teams
         with open("V:/projects/coding/teamShirts/teams.py") as json_file:
             self.teams = json.load(json_file)
         countries = self.teams.keys()
-
 
         # Layouts
         main_layout = QtWidgets.QVBoxLayout()
@@ -36,7 +53,6 @@ class teamSelectorDialog(QtWidgets.QDialog):
         team_layout = QtWidgets.QHBoxLayout()
         button_layout = QtWidgets.QHBoxLayout()
         display_layout = QtWidgets.QHBoxLayout()
-
 
         # Widgets
         main_label = QtWidgets.QLabel("Team Selector:")
@@ -52,12 +68,12 @@ class teamSelectorDialog(QtWidgets.QDialog):
         self.team_list = QtWidgets.QListWidget()
         self.team_list.setFixedSize(250, 100)
         self.team_list.itemClicked.connect(self.team_clicked_event)
-        self.home_pb = QtWidgets.QPushButton("Home")
+        self.home_pb = QtWidgets.QPushButton("Set as &Home team")
         self.home_pb.clicked.connect(self.home_button_clicked)
-        self.home_pb.setFixedWidth(80)
-        self.away_pb = QtWidgets.QPushButton("Away")
+        self.home_pb.setFixedWidth(120)
+        self.away_pb = QtWidgets.QPushButton("Set as &Away team")
         self.away_pb.clicked.connect(self.away_button_clicked)
-        self.away_pb.setFixedWidth(80)
+        self.away_pb.setFixedWidth(120)
         display_label = QtWidgets.QLabel("Team shirt: ")
         self.display_pixmap = QPixmap()
         self.display_pixmap_label = QtWidgets.QLabel()
@@ -65,7 +81,6 @@ class teamSelectorDialog(QtWidgets.QDialog):
         self.display_pixmap_label.setFixedSize(120, 120)
         self.display_pixmap_label.setPixmap(self.display_pixmap)
         self.display_pixmap_label.setScaledContents(True)
-
 
         # setup
         main_layout.addWidget(main_label)
@@ -84,7 +99,6 @@ class teamSelectorDialog(QtWidgets.QDialog):
         main_layout.addItem(button_layout)
         button_layout.addWidget(self.home_pb)
         button_layout.addWidget(self.away_pb)
-
 
         self.setLayout(main_layout)
         self.resize(400, 300)
@@ -110,10 +124,12 @@ class teamSelectorDialog(QtWidgets.QDialog):
         self.display_pixmap_label.setPixmap(self.display_pixmap)
         #self.display_pixmap_label.show()
 
-
-
     def home_button_clicked(self):
         print("Thumb file: " + str(get_thumb_file(self.team_selected)))
+        print("Getting texture node...")
+        texture_node = get_texture_node(mc.ls(sl=True))
+        print("texture node: " + str(texture_node))
+        mc.setAttr((str(texture_node) + ".fileTextureName"), str(get_UDIM_file(self.team_selected)), type="string")
 
     def away_button_clicked(self):
         print("Away button clicked with " + str(self.team_selected) + " selected")
@@ -121,7 +137,7 @@ class teamSelectorDialog(QtWidgets.QDialog):
 
 def show_dialog():
     app = QtWidgets.QApplication(sys.argv)
-    d = teamSelectorDialog()
+    d = TeamSelectorDialog()
     d.exec_()  # blocking call
 
 
