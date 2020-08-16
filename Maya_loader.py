@@ -1,5 +1,5 @@
 import sys
-sys.path.append("/Users/dan/PycharmProjects/pythonSchool/teamSelector")
+sys.path.append("V:/projects/coding/teamShirts")
 
 from maya import OpenMayaUI as omui
 from shiboken2 import wrapInstance
