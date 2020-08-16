@@ -1,5 +1,5 @@
 import sys
-sys.path.append("V:/projects/coding/teamShirts")
+sys.path.append("Users/Dan/PycharmProects/teamShirts")
 
 from maya import OpenMayaUI as omui
 from shiboken2 import wrapInstance
@@ -12,5 +12,5 @@ ptr = omui.MQtUtil.mainWindow()
 widget = wrapInstance(long(ptr), QtWidgets.QWidget)
 
 
-d = teamSelector_main.ssDialog(widget)
+d = teamSelector_main.teamSelectorDialog(widget)
 d.exec_()

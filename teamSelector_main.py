@@ -2,9 +2,9 @@ import sys
 from PySide2 import QtWidgets
 import json
 
-class ssDialog(QtWidgets.QDialog):
+class teamSelectorDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
-        super(ssDialog, self).__init__(parent)
+        super(teamSelectorDialog, self).__init__(parent)
 
         # Teams
         with open("teams.py") as json_file:
@@ -74,7 +74,7 @@ class ssDialog(QtWidgets.QDialog):
 
 def show_dialog():
     app = QtWidgets.QApplication(sys.argv)
-    d = ssDialog()
+    d = teamSelectorDialog()
     d.exec_()  # blocking call
 
 
