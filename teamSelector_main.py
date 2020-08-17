@@ -102,6 +102,8 @@ class TeamSelectorDialog(QtWidgets.QDialog):
 
         self.setLayout(main_layout)
         self.resize(400, 300)
+        self.country_cb.setCurrentIndex(0)
+
 
     def country_click_event(self):
         self.league_list.clear()
@@ -127,9 +129,16 @@ class TeamSelectorDialog(QtWidgets.QDialog):
     def home_button_clicked(self):
         print("Thumb file: " + str(get_thumb_file(self.team_selected)))
         print("Getting texture node...")
-        texture_node = get_texture_node(mc.ls(sl=True))
+        try:
+            texture_node = get_texture_node(mc.ls(sl=True))
+        except NameError:
+            print("Texture node only available in Maya")
+            texture_node = "texture_node_from_Maya"
         print("texture node: " + str(texture_node))
-        mc.setAttr((str(texture_node) + ".fileTextureName"), str(get_UDIM_file(self.team_selected)), type="string")
+        try:
+            mc.setAttr((str(texture_node) + ".fileTextureName"), str(get_UDIM_file(self.team_selected)), type="string")
+        except NameError:
+            print(("setAttr only available in Maya"))
 
     def away_button_clicked(self):
         print("Away button clicked with " + str(self.team_selected) + " selected")
