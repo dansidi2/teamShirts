@@ -2,6 +2,8 @@ import sys
 from PySide2 import QtWidgets
 import json
 from PySide2.QtGui import QPixmap
+from maya import OpenMayaUI as omui
+from shiboken2 import wrapInstance
 
 try:
     import maya.cmds as mc
@@ -16,6 +18,11 @@ def lower_case(name):
 
 class TeamSelectorDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
+
+        if not parent:
+            ptr = omui.MQtUtil.mainWindow()
+            parent = wrapInstance(long(ptr), QtWidgets.QWidget)
+
         super(TeamSelectorDialog, self).__init__(parent)
 
         # Teams
@@ -166,10 +173,10 @@ class TeamSelectorDialog(QtWidgets.QDialog):
         return texture_file_name
 
 
-# def show_dialog():
-#     app = QtWidgets.QApplication(sys.argv)
-#     d = TeamSelectorDialog()
-#     d.exec_()  # blocking call
+def show_dialog():
+    app = QtWidgets.QApplication(sys.argv)
+    d = TeamSelectorDialog()
+    d.exec_()  # blocking call
 
 
 INSTANCE = None
@@ -183,4 +190,4 @@ def show_gui():
 
 
 if __name__ == "__main__":
-    show_gui()
+    show_dialog()
