@@ -13,4 +13,4 @@ widget = wrapInstance(long(ptr), QtWidgets.QWidget)
 
 
 d = teamSelector_main.teamSelectorDialog(widget)
-d.exec_()
+d.show()

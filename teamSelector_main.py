@@ -2,39 +2,16 @@ import sys
 from PySide2 import QtWidgets
 import json
 from PySide2.QtGui import QPixmap
+
 try:
     import maya.cmds as mc
+    import maya.mel as mel
 except ModuleNotFoundError:
     pass
 
 
 def lower_case(name):
     return name.replace(" ", "_").lower()
-
-
-def get_thumb_file(proper_name):
-    suffix = (str(lower_case(proper_name)) + "_1001")
-    extension = (suffix + (".png"))
-    thumb_file = ("V:\projects\StadiumCrowd\Assets\clothing\clubShirts\\thumbs\\" + str(extension))
-    return thumb_file
-
-
-def get_UDIM_file(proper_name):
-    suffix = (str(lower_case(proper_name)) + "_<UDIM>")
-    extension = (suffix + (".png"))
-    UDIM_file = ("V:\projects\StadiumCrowd\Assets\clothing\clubShirts\\thumbs\\" + str(extension))
-    return UDIM_file
-
-def get_texture_node(selected):
-    selectedNode = mc.ls(sl=True, dag=True, s=True)
-    print("Selected node: " + str(selectedNode))
-    shadeEng = mc.listConnections(selectedNode, type="shadingEngine")
-    print("ShadeEng: " + str(shadeEng))
-    materials = mc.ls(mc.listConnections(shadeEng), materials=True)
-    print("Materials: " + str(materials))
-    texture_node = mc.listConnections(materials)[0]
-    print("Texture node: " + str(texture_node))
-    return texture_node
 
 
 class TeamSelectorDialog(QtWidgets.QDialog):
@@ -100,6 +77,15 @@ class TeamSelectorDialog(QtWidgets.QDialog):
         button_layout.addWidget(self.home_pb)
         button_layout.addWidget(self.away_pb)
 
+        # populate default values
+        self.country_clicked = "England"
+        self.leagues = list(self.teams.get(self.country_clicked).keys())
+        self.league_list.addItems(self.leagues)
+        self.league_clicked = self.leagues[self.leagues.index("Premiere League")]
+        self.teams_in_league = self.teams.get(self.country_clicked).get(self.league_clicked)
+        self.team_list.addItems(self.teams_in_league)
+
+
         self.setLayout(main_layout)
         self.resize(400, 300)
         self.country_cb.setCurrentIndex(0)
@@ -114,41 +100,87 @@ class TeamSelectorDialog(QtWidgets.QDialog):
     def league_clicked_event(self):
         self.team_list.clear()
         row_clicked = self.league_list.currentRow()
-        league_clicked = self.leagues[row_clicked]
-        self.teams_in_league = self.teams.get(self.country_clicked).get(league_clicked)
+        self.league_clicked = self.leagues[row_clicked]
+        self.teams_in_league = self.teams.get(self.country_clicked).get(self.league_clicked)
         self.team_list.addItems(self.teams_in_league)
 
     def team_clicked_event(self):
         row_clicked = self.team_list.currentRow()
-        self.team_selected = self.teams_in_league[row_clicked]
-        print(self.team_selected)
-        self.display_pixmap.load(get_thumb_file(self.team_selected))
+        self.team_clicked = self.teams_in_league[row_clicked]
+        print("team clicked: " + self.team_clicked)
+        print("lower_case: " + lower_case(self.team_clicked))
+        self.display_pixmap.load(self.get_thumb_file())
         self.display_pixmap_label.setPixmap(self.display_pixmap)
         #self.display_pixmap_label.show()
 
     def home_button_clicked(self):
-        print("Thumb file: " + str(get_thumb_file(self.team_selected)))
+        print("Thumb file: " + str(self.get_thumb_file()))
         print("Getting texture node...")
         try:
-            texture_node = get_texture_node(mc.ls(sl=True))
+            texture_node = self.get_texture_node("home_kit_shirt")
         except NameError:
             print("Texture node only available in Maya")
             texture_node = "texture_node_from_Maya"
         print("texture node: " + str(texture_node))
+        print("path to texture file: " + self.texture_file_name())
+        UDIM_file = self.get_UDIM_file()
         try:
-            mc.setAttr((str(texture_node) + ".fileTextureName"), str(get_UDIM_file(self.team_selected)), type="string")
+            mc.setAttr((str(texture_node) + ".fileTextureName"), UDIM_file, type="string")
+            # mc.ogs(regenerateUVTilePreview("home_kit_shirt_TEX"))
+            mel.eval("generateUvTilePreview home_kit_shirt_TEX;")
         except NameError:
-            print(("setAttr only available in Maya"))
+            print(("setAttr only available in Maya (NameError)"))
 
     def away_button_clicked(self):
-        print("Away button clicked with " + str(self.team_selected) + " selected")
+        print("Away button clicked with " + str(self.team_clicked) + " selected")
+
+    def get_texture_node(self, selected):
+        selectedNode = mc.ls(sl=True, dag=True, s=True)
+        if selectedNode == []:
+            selectedNode = "home_kit_shirtShape"
+        print("Selected node: " + str(selectedNode))
+        shadeEng = mc.listConnections(selectedNode, type="shadingEngine")
+        print("ShadeEng: " + str(shadeEng))
+        materials = mc.ls(mc.listConnections(shadeEng), materials=True)
+        print("Materials: " + str(materials))
+        texture_node = mc.listConnections(materials)[0]
+        print("Texture node: " + str(texture_node))
+        return texture_node
+
+    def get_thumb_file(self):
+        thumb_file = self.texture_file_name() + "_1001.png"
+        print("thumb file: " + thumb_file)
+        return thumb_file
+
+    def get_UDIM_file(self):
+        UDIM_file = self.texture_file_name() + "_<UDIM>.png"
+        print("UDIM file: " + str(UDIM_file))
+        return UDIM_file
+
+    def texture_file_name(self):
+        country = self.country_clicked
+        league = self.league_clicked
+        team = self.team_clicked
+        base_path = "V:\\projects\\StadiumCrowd\\Assets\\clothing\\clubShirts\\"
+        texture_file_name = base_path + lower_case(country) + "\\" + lower_case(league) + "\\" + lower_case(team)
+        return texture_file_name
 
 
-def show_dialog():
-    app = QtWidgets.QApplication(sys.argv)
-    d = TeamSelectorDialog()
-    d.exec_()  # blocking call
+# def show_dialog():
+#     app = QtWidgets.QApplication(sys.argv)
+#     d = TeamSelectorDialog()
+#     d.exec_()  # blocking call
+
+
+INSTANCE = None
+def show_gui():
+    """ Singleton to create to create the gui if it doesn't exist, or show if it does """
+    global INSTANCE
+    if not INSTANCE:
+        INSTANCE = TeamSelectorDialog()
+    INSTANCE.show()
+    return INSTANCE
 
 
 if __name__ == "__main__":
-    show_dialog()
+    show_gui()
