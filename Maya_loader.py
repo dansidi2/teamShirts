@@ -1,16 +1,17 @@
-import sys
-sys.path.append("Users/Dan/PycharmProects/teamShirts")
+####################
+# Run this in your maya script editor:
 
-from maya import OpenMayaUI as omui
-from shiboken2 import wrapInstance
+import sys
+
+# change this path to your location of the pythonSchool git repo
+sys.path.append("V:/projects/coding/teamShirts")
+
 import teamSelector_main
-from PySide2 import QtWidgets
+
+if teamSelector_main.INSTANCE:
+    teamSelector_main.INSTANCE.close()
+    teamSelector_main.INSTANCE
 
 reload(teamSelector_main)
 
-ptr = omui.MQtUtil.mainWindow()
-widget = wrapInstance(long(ptr), QtWidgets.QWidget)
-
-
-d = teamSelector_main.teamSelectorDialog(widget)
-d.show()
+teamSelector_main.show_gui()
