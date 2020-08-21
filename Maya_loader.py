@@ -6,12 +6,12 @@ import sys
 # change this path to your location of the pythonSchool git repo
 sys.path.append("V:/projects/coding/teamShirts")
 
-import teamSelector_main
+import teamSelector_maya
 
-if teamSelector_main.INSTANCE:
-    teamSelector_main.INSTANCE.close()
-    teamSelector_main.INSTANCE
+if teamSelector_maya.INSTANCE:
+    teamSelector_maya.INSTANCE.close()
+    teamSelector_maya.INSTANCE
 
-reload(teamSelector_main)
+reload(teamSelector_maya)
 
-teamSelector_main.show_gui()
+teamSelector_maya.show_gui()

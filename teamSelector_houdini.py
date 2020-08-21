@@ -2,15 +2,7 @@ import sys
 from PySide2 import QtWidgets
 import json
 from PySide2.QtGui import QPixmap
-from maya import OpenMayaUI as omui
-from shiboken2 import wrapInstance
-
-try:
-    import maya.cmds as mc
-    import maya.mel as mel
-except ModuleNotFoundError:
-    pass
-
+import hou
 
 def lower_case(name):
     return name.replace(" ", "_").lower()
@@ -19,9 +11,9 @@ def lower_case(name):
 class TeamSelectorDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
 
-        if not parent:
-            ptr = omui.MQtUtil.mainWindow()
-            parent = wrapInstance(long(ptr), QtWidgets.QWidget)
+        # if not parent:
+        #     ptr = omui.MQtUtil.mainWindow()
+        #     parent = wrapInstance(long(ptr), QtWidgets.QWidget)
 
         super(TeamSelectorDialog, self).__init__(parent)
 
@@ -122,38 +114,13 @@ class TeamSelectorDialog(QtWidgets.QDialog):
 
     def home_button_clicked(self):
         print("Thumb file: " + str(self.get_thumb_file()))
-        print("Getting texture node...")
-        try:
-            texture_node = self.get_texture_node("home_kit_shirt")
-        except NameError:
-            print("Texture node only available in Maya")
-            texture_node = "texture_node_from_Maya"
-        print("texture node: " + str(texture_node))
-        print("path to texture file: " + self.texture_file_name())
-        UDIM_file = self.get_UDIM_file()
-        try:
-            mc.setAttr((str(texture_node) + ".fileTextureName"), UDIM_file, type="string")
-            # mc.ogs(regenerateUVTilePreview("home_kit_shirt_TEX"))
-            mel.eval("generateUvTilePreview home_kit_shirt_TEX;")
-        except NameError:
-            print(("setAttr only available in Maya (NameError)"))
+        texture_node = hou.node("obj/RIG/materials/home_shirt_MAT")
+        texture_node.parm("basecolor_texture").set(self.get_thumb_file())
 
     def away_button_clicked(self):
         print("Thumb file: " + str(self.get_thumb_file()))
-        print("Getting texture node...")
-        try:
-            texture_node = self.get_texture_node("away_kit_shirt")
-        except NameError:
-            print("Texture node only available in Maya")
-            texture_node = "texture_node_from_Maya"
-        print("texture node: " + str(texture_node))
-        print("path to texture file: " + self.texture_file_name())
-        UDIM_file = self.get_UDIM_file()
-        try:
-            mc.setAttr((str(texture_node) + ".fileTextureName"), UDIM_file, type="string")
-            mel.eval("generateUvTilePreview away_kit_shirt_TEX;")
-        except NameError:
-            print(("setAttr only available in Maya (NameError)"))
+        texture_node = hou.node("obj/RIG/materials/away_shirt_MAT")
+        texture_node.parm("basecolor_texture").set(self.get_thumb_file())
 
     def get_texture_node(self, selected):
         selectedNode = selected + "Shape"
